@@ -25,27 +25,23 @@ setInterval(() => {
   a = new Date();
   date = a.toLocaleDateString(undefined, options);
   time = a.getHours() + ":" + a.getMinutes() + ":" + a.getSeconds();
-  //   document.getElementById("time").innerHTML =
-  //     "<strong> " + time + " <br> Day —> " + date + "</strong";
-  // Get hours, minutes, and seconds
+
   const hours24 = a.getHours();
   const minutes = a.getMinutes();
   const seconds = a.getSeconds();
 
-  // Determine AM or PM for 12-hour format
   const ampm = hours24 >= 12 ? "PM" : "AM";
 
-  // Convert to 12-hour format
   const hours12 = hours24 % 12;
   const displayHours12 = hours12 ? hours12 : 12; // the hour '0' should be '12'
 
-  // Format both time outputs
   time24 =
     (hours24 < 10 ? "0" + hours24 : hours24) +
     ":" +
     (minutes < 10 ? "0" + minutes : minutes) +
     ":" +
     (seconds < 10 ? "0" + seconds : seconds);
+
   time12 =
     displayHours12 +
     ":" +
@@ -55,7 +51,6 @@ setInterval(() => {
     " " +
     ampm;
 
-  // Update time display
   document.getElementById("time").innerHTML =
     "<strong>24-Hour: " +
     time24 +
