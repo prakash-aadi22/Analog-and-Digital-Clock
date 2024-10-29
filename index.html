@@ -250,8 +250,24 @@
             const body = document.body;
             const icon = document.getElementById('mode-icon');
             body.classList.toggle('dark-mode');
-            icon.textContent = body.classList.contains('dark-mode') ? '🌙' : '☀️';
+            // Change the icon based on the current mode
+            icon.textContent = body.classList.contains('dark-mode') ? '☀️' : '🌙';
         }
+
+        // Set the initial icon based on the default mode
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedMode = localStorage.getItem('mode');
+            const body = document.body;
+            const icon = document.getElementById('mode-icon');
+
+            // Check the saved mode and apply it
+            if (savedMode === 'dark') {
+                body.classList.add('dark-mode');
+                icon.textContent = '☀️'; // Set icon for dark mode
+            } else {
+                icon.textContent = '🌙'; // Set icon for light mode
+            }
+        });
     </script>
 </body>
 
