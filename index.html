@@ -252,6 +252,9 @@
             body.classList.toggle('dark-mode');
             // Change the icon based on the current mode
             icon.textContent = body.classList.contains('dark-mode') ? '☀️' : '🌙';
+
+            // Store the current mode in localStorage
+            localStorage.setItem('mode', body.classList.contains('dark-mode') ? 'dark' : 'light');
         }
 
         // Set the initial icon based on the default mode
