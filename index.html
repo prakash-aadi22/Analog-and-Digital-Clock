@@ -1,29 +1,258 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="index.css">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
-        integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
-    <title>Clock</title>
-    <script src="index.js"></script>
+    <meta charset="utf-8">
+    <title>Analog Clock with Day/Night Mode and Digital Time</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #acbaca;
+            transition: background 0.3s;
+        }
+
+        /* Dark mode background */
+        body.dark-mode {
+            background: #1e1e1e;
+        }
+
+        .clock {
+            position: relative;
+            width: 450px;
+            height: 450px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #c9d5e0;
+            border-radius: 50%;
+            box-shadow: 45px 45px 45px -15px rgba(0, 0, 0, 0.15), inset 15px 15px 10px rgba(255, 255, 255, 0.75), -15px -15px 35px rgba(255, 255, 255, 0.55), inset -2px -2px 15px rgba(0, 0, 0, 0.2);
+            transition: background 0.3s;
+        }
+
+        /* Dark mode clock face */
+        body.dark-mode .clock {
+            background: #333;
+            box-shadow: 45px 45px 45px -15px rgba(0, 0, 0, 0.3), inset 15px 15px 10px rgba(0, 0, 0, 0.5), -15px -15px 35px rgba(255, 255, 255, 0.1), inset -2px -2px 15px rgba(255, 255, 255, 0.1);
+        }
+
+        .numbers {
+            position: absolute;
+            top: 30px;
+            width: 390px;
+            height: 390px;
+            background: #152b4a;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 7px 7px 22px #152b4a66;
+            inset: 7px 7px 7px rgba(255, 255, 255, 0.55), -9px -9px 15px rgba(255, 255, 255, 1);
+        }
+
+        /* Dark mode inner clock circle */
+        body.dark-mode .numbers {
+            background: #444;
+            box-shadow: 7px 7px 22px #00000066, inset 7px 7px 7px rgba(0, 0, 0, 0.5), -9px -9px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .numbers::before {
+            content: '';
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #e91e63;
+            z-index: 100000;
+            box-shadow: 0 0 0 1px #e91e63, 0 0 0 3px #fff, 0 0 5px 5px rgba(0, 0, 0, 0.15);
+        }
+
+        .numbers span {
+            position: absolute;
+            inset: 15px;
+            text-align: center;
+            color: #fff;
+            font-size: 1.25em;
+            transform: rotate(calc(30deg * var(--i)));
+            transition: color 0.3s;
+        }
+
+        /* Dark mode number colors */
+        body.dark-mode .numbers span {
+            color: #ccc;
+        }
+
+        .numbers span b {
+            font-weight: 400;
+            display: inline-block;
+            transform: rotate(calc(-30deg * var(--i)));
+        }
+
+        .numbers .circle {
+            position: absolute;
+            width: 280px;
+            height: 280px;
+            border: 1px solid rgba(0, 0, 0, 0.75);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            z-index: 10;
+        }
+
+        .numbers .circle i {
+            position: absolute;
+            width: 6px;
+            height: 50%;
+            background: var(--clr);
+            opacity: 0.75;
+            transform-origin: bottom;
+            transform: scaleY(0.5);
+        }
+
+        .numbers .circle#sec i {
+            width: 2px;
+        }
+
+        .numbers .circle#min i {
+            width: 4px;
+        }
+
+        .numbers .circle#min {
+            width: 230px;
+            height: 230px;
+        }
+
+        .numbers .circle#hrs {
+            width: 180px;
+            height: 180px;
+        }
+
+        .numbers .circle::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: 50%;
+            width: 10px;
+            height: 10px;
+            background: var(--clr);
+            border-radius: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 0 20px var(--clr), 0 0 60px var(--clr);
+        }
+
+        .toggle-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5rem;
+            background: none;
+            border: none;
+            color: #333;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        /* Toggle icon color for dark mode */
+        .dark-mode .toggle-button {
+            color: #ffdd57;
+        }
+
+        .time-info {
+            margin-top: 40px;
+            text-align: center;
+            color: #333;
+            font-size: 1.25rem;
+        }
+
+        /* Dark mode time-info */
+        .dark-mode .time-info {
+            color: #ccc;
+        }
+    </style>
 </head>
 
 <body>
-    <div id="clockContainer">
-        <div id="hour"></div>
-        <div id="minute"></div>
-        <div id="second"></div>
+    <button class="toggle-button" onclick="toggleMode()">
+        <span id="mode-icon">🌙</span>
+    </button>
+    <div class="clock">
+        <div class="numbers">
+            <div class="circle" id="sec" style="--clr:#04fc43;"><i></i></div>
+            <div class="circle" id="min" style="--clr:#fee800"><i></i></div>
+            <div class="circle" id="hrs" style="--clr:#ff2972"><i></i></div>
+            <span style="--i:0;"><b>12</b></span>
+            <span style="--i:1;"><b>1</b></span>
+            <span style="--i:2;"><b>2</b></span>
+            <span style="--i:3;"><b>3</b></span>
+            <span style="--i:4;"><b>4</b></span>
+            <span style="--i:5;"><b>5</b></span>
+            <span style="--i:6;"><b>6</b></span>
+            <span style="--i:7;"><b>7</b></span>
+            <span style="--i:8;"><b>8</b></span>
+            <span style="--i:9;"><b>9</b></span>
+            <span style="--i:10;"><b>10</b></span>
+            <span style="--i:11;"><b>11</b></span>
+        </div>
+    </div>
+    <div class="time-info">
+        <div id="day"></div>
+        <div id="time-12h"></div>
+        <div id="time-24h"></div>
     </div>
 
-    <div class="container my-4">
-        <h1 class="display-4">
-            <strong>Time: <br></strong><span id="time">
-            </span>
-        </h1>
-    </div>
+    <script>
+
+        let hr = document.querySelector('#hrs');
+        let mn = document.querySelector('#min');
+        let sc = document.querySelector('#sec');
+
+        setInterval(() => {
+            let day = new Date();
+            let hh = day.getHours() * 30;
+            let mm = day.getMinutes() * 6;
+            let ss = day.getSeconds() * 6;
+
+            hr.style.transform = `rotateZ(${hh + (mm / 12)}deg)`;
+            mn.style.transform = `rotateZ(${mm}deg)`;
+            sc.style.transform = `rotateZ(${ss}deg)`;
+
+            // Display the current day and date
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('day').innerText = day.toLocaleDateString('en-US', options);
+
+            let hours = day.getHours();
+            let minutes = String(day.getMinutes()).padStart(2, '0');
+            let seconds = String(day.getSeconds()).padStart(2, '0');
+
+            // 12-hour format
+            let ampm = hours >= 12 ? 'PM' : 'AM';
+            let hours12 = hours % 12 || 12;
+            document.getElementById('time-12h').innerText = `12-hour: ${hours12}:${minutes}:${seconds} ${ampm}`;
+
+            // 24-hour format
+            document.getElementById('time-24h').innerText = `24-hour: ${hours}:${minutes}:${seconds}`;
+        }, 1000);
+
+        function toggleMode() {
+            const body = document.body;
+            const icon = document.getElementById('mode-icon');
+            body.classList.toggle('dark-mode');
+            icon.textContent = body.classList.contains('dark-mode') ? '🌙' : '☀️';
+        }
+    </script>
 </body>
 
 </html>
