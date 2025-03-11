@@ -7,13 +7,35 @@
     <title>Analog Clock with Day/Night Mode and Digital Time</title>
     <link rel="icon" href="./clock.png" type="image/png">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700&display=swap');
+
+        :root {
+            --light-bg: linear-gradient(135deg, #f0f4f8 0%, #d7e3f0 100%);
+            --light-clock-face: linear-gradient(135deg, #ffffff 0%, #f0f4f8 100%);
+            --light-inner-circle: linear-gradient(135deg, #3a6ea5 0%, #274472 100%);
+            --light-clock-border: rgba(255, 255, 255, 0.9);
+            --light-text: #274472;
+            --light-card-bg: rgba(255, 255, 255, 0.85);
+            --light-marker: rgba(58, 110, 165, 0.5);
+            --light-hour-marker: rgba(58, 110, 165, 0.9);
+
+            --dark-bg: linear-gradient(135deg, #121212 0%, #2d2d2d 100%);
+            --dark-clock-face: linear-gradient(135deg, #2c3e50 0%, #1a1a2e 100%);
+            --dark-inner-circle: #1e272e;
+            --dark-text: #ecf0f1;
+            --dark-card-bg: rgba(0, 0, 0, 0.2);
+
+            --hour-hand: #ff2972;
+            --minute-hand: #fee800;
+            --second-hand: #04fc43;
+            --transition-time: 0.5s;
+        }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Montserrat', sans-serif;
         }
 
         body {
@@ -22,229 +44,509 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background: #acbaca;
-            transition: background 0.3s;
+            background: var(--light-bg);
+            transition: background var(--transition-time);
             padding: 20px;
+            overflow-x: hidden;
         }
 
-        /* Dark mode background */
         body.dark-mode {
-            background: #1e1e1e;
+            background: var(--dark-bg);
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 500px;
+            width: 100%;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.8s forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .clock-container {
+            position: relative;
+            width: min(450px, 90vw);
+            height: min(450px, 90vw);
+            margin: 20px 0;
+            transition: transform 0.3s ease;
+        }
+
+        .clock-container:hover {
+            transform: scale(1.02);
         }
 
         .clock {
             position: relative;
-            width: min(450px, 90vw);
-            height: min(450px, 90vw);
+            width: 100%;
+            height: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
-            background: #c9d5e0;
+            background: var(--light-clock-face);
             border-radius: 50%;
-            box-shadow: 45px 45px 45px -15px rgba(0, 0, 0, 0.15), inset 15px 15px 10px rgba(255, 255, 255, 0.75), -15px -15px 35px rgba(255, 255, 255, 0.55), inset -2px -2px 15px rgba(0, 0, 0, 0.2);
-            transition: background 0.3s;
+            border: 12px solid var(--light-clock-border);
+            box-shadow:
+                0 10px 35px rgba(0, 0, 0, 0.05),
+                inset 0 0 30px rgba(255, 255, 255, 0.8),
+                0 0 0 1px rgba(0, 0, 0, 0.05);
+            transition: all var(--transition-time);
         }
 
-        /* Dark mode clock face */
         body.dark-mode .clock {
-            background: #333;
-            box-shadow: 45px 45px 45px -15px rgba(0, 0, 0, 0.3), inset 15px 15px 10px rgba(0, 0, 0, 0.5), -15px -15px 35px rgba(255, 255, 255, 0.1), inset -2px -2px 15px rgba(255, 255, 255, 0.1);
+            background: var(--dark-clock-face);
+            border: 12px solid rgba(0, 0, 0, 0.2);
+            box-shadow:
+                20px 20px 60px rgba(0, 0, 0, 0.3),
+                inset 0 0 30px rgba(0, 0, 0, 0.5),
+                0 0 0 8px rgba(0, 0, 0, 0.2),
+                0 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .clock-face-shadow {
+            position: absolute;
+            width: 92%;
+            height: 92%;
+            border-radius: 50%;
+            background: transparent;
+            box-shadow:
+                inset 5px 5px 10px rgba(0, 0, 0, 0.05),
+                inset -5px -5px 10px rgba(0, 0, 0, 0.05),
+                inset -5px 5px 10px rgba(0, 0, 0, 0.05),
+                inset 5px -5px 10px rgba(0, 0, 0, 0.05);
+            z-index: 2;
+        }
+
+        body.dark-mode .clock-face-shadow {
+            box-shadow:
+                inset 5px 5px 10px rgba(0, 0, 0, 0.2),
+                inset -5px -5px 10px rgba(0, 0, 0, 0.2),
+                inset -5px 5px 10px rgba(0, 0, 0, 0.2),
+                inset 5px -5px 10px rgba(0, 0, 0, 0.2);
         }
 
         .numbers {
-            position: absolute;
-            width: 86.67%;
-            height: 86.67%;
-            background: #152b4a;
+            /* position: absolute; */
+            width: 85%;
+            height: 85%;
+            background: var(--light-inner-circle);
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: 7px 7px 22px #152b4a66;
-            inset: 7px 7px 7px rgba(255, 255, 255, 0.55), -9px -9px 15px rgba(255, 255, 255, 1);
+            box-shadow:
+                inset 0 0 25px rgba(0, 0, 0, 0.2),
+                0 0 0 1px rgba(255, 255, 255, 0.15);
+            transition: background var(--transition-time);
         }
 
-        /* Dark mode inner clock circle */
         body.dark-mode .numbers {
-            background: #444;
-            box-shadow: 7px 7px 22px #00000066, inset 7px 7px 7px rgba(0, 0, 0, 0.5), -9px -9px 15px rgba(0, 0, 0, 0.5);
+            background: var(--dark-inner-circle);
         }
 
         .numbers::before {
             content: '';
             position: absolute;
-            width: 4px;
-            height: 4px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
             background: #e91e63;
-            z-index: 100000;
-            box-shadow: 0 0 0 1px #e91e63, 0 0 0 3px #fff, 0 0 5px 5px rgba(0, 0, 0, 0.15);
+            z-index: 10;
+            box-shadow: 0 0 0 1px #e91e63, 0 0 0 3px rgba(255, 255, 255, 0.7), 0 0 10px 5px rgba(233, 30, 99, 0.3);
+        }
+
+        .brand {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: clamp(0.8rem, 2vw, 1rem);
+            font-weight: 300;
+            letter-spacing: 1px;
+            top: 35%;
+            z-index: 5;
+            text-transform: uppercase;
+        }
+
+        .clock-marker {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            left: 0;
+            top: 0;
+        }
+
+        .marker {
+            position: absolute;
+            width: 2px;
+            height: 12px;
+            background: var(--light-marker);
+            left: 50%;
+            margin-left: -1px;
+            transform-origin: 50% 42.5vw;
+        }
+
+        body.dark-mode .marker {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        @media (min-width: 500px) {
+            .marker {
+                transform-origin: 50% 212.5px;
+            }
+        }
+
+        .marker.hour-mark {
+            height: 20px;
+            width: 4px;
+            background: var(--light-hour-marker);
+        }
+
+        body.dark-mode .marker.hour-mark {
+            background: rgba(255, 255, 255, 0.8);
         }
 
         .numbers span {
+            margin: 22px 0;
             position: absolute;
             inset: 15px;
             text-align: center;
             color: #fff;
-            font-size: clamp(0.8rem, 3vw, 1.25rem);
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            font-weight: 500;
             transform: rotate(calc(30deg * var(--i)));
             transition: color 0.3s;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
         }
 
-        /* Dark mode number colors */
         body.dark-mode .numbers span {
-            color: #ccc;
+            color: #f0f0f0;
         }
 
         .numbers span b {
-            font-weight: 400;
             display: inline-block;
             transform: rotate(calc(-30deg * var(--i)));
         }
 
         .numbers .circle {
             position: absolute;
-            width: 72%;
-            height: 72%;
-            border: 1px solid rgba(0, 0, 0, 0.75);
-            border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            z-index: 10;
+            border-radius: 50%;
+            z-index: 5;
+            height: 92%;
         }
 
         .numbers .circle i {
             position: absolute;
+            background: var(--clr);
+            transform-origin: bottom;
+            border-radius: 10px;
+            box-shadow: 0 0 10px var(--clr), 0 0 20px rgba(0, 0, 0, 0.2);
             width: 6px;
             height: 50%;
-            background: var(--clr);
-            opacity: 0.75;
-            transform-origin: bottom;
+            opacity: 1;
             transform: scaleY(0.5);
         }
 
         .numbers .circle#sec i {
             width: 2px;
+            margin: -110px 0;
+            height: 80%;
+            opacity: 0.8;
         }
 
         .numbers .circle#min i {
             width: 4px;
-        }
-
-        .numbers .circle#min {
-            width: 60%;
+            margin: -45px 0;
             height: 60%;
+            opacity: 0.9;
         }
 
-        .numbers .circle#hrs {
-            width: 45%;
-            height: 45%;
+        .numbers .circle#hrs i {
+            width: 6px;
+            margin: 10px 0;
+            height: 48%;
+            opacity: 1;
         }
 
-        .numbers .circle::before {
+        /* .numbers .circle::before {
             content: '';
             position: absolute;
-            top: -6px;
-            left: 50%;
-            width: 10px;
-            height: 10px;
-            background: var(--clr);
+            top: -8px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
-            transform: translateX(-50%);
+            background: var(--clr);
             box-shadow: 0 0 20px var(--clr), 0 0 60px var(--clr);
+        } */
+
+        .toggle-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            position: relative;
         }
 
         .toggle-button {
-            position: relative;
-            margin-bottom: 20px;
-            font-size: 1.5rem;
-            background: none;
-            border: none;
-            color: #333;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(58, 110, 165, 0.1);
+            border: 2px solid rgba(58, 110, 165, 0.2);
             cursor: pointer;
-            transition: color 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s;
+            color: var(--light-text);
         }
 
-        /* Toggle icon color for dark mode */
-        .dark-mode .toggle-button {
-            color: #ffdd57;
+        .toggle-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            background: rgba(58, 110, 165, 0.15);
         }
 
-        .time-info {
-            margin-top: 20px;
-            text-align: center;
-            color: #333;
-            font-size: clamp(0.9rem, 3vw, 1.25rem);
-            width: 100%;
-            padding: 0 10px;
-            word-wrap: break-word;
+        .toggle-button:active {
+            transform: translateY(0);
         }
 
-        /* Dark mode time-info */
-        .dark-mode .time-info {
-            color: #ccc;
+        body.dark-mode .toggle-button {
+            background: rgba(0, 0, 0, 0.3);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            color: var(--dark-text);
         }
 
         #mode-icon {
-            display: inline-block;
-            transition: transform 1s;
+            font-size: 1.8rem;
+            transition: transform 1s ease;
         }
 
         .toggle-button:hover #mode-icon {
             transform: rotate(360deg);
         }
 
-        @media (max-width: 600px) {
-            .time-info {
-                margin-top: 15px;
+        .time-info {
+            margin-top: 25px;
+            text-align: center;
+            color: var(--light-text);
+            transition: all var(--transition-time);
+            width: 100%;
+            padding: 25px;
+            background: var(--light-card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow:
+                0 10px 30px rgba(0, 0, 0, 0.05),
+                0 1px 1px rgba(0, 0, 0, 0.03),
+                inset 0 1px 1px rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+        }
+
+        body.dark-mode .time-info {
+            color: var(--dark-text);
+            background: var(--dark-card-bg);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        #day {
+            font-size: clamp(1.2rem, 4vw, 1.5rem);
+            font-weight: 600;
+            margin-bottom: 15px;
+            position: relative;
+            display: inline-block;
+        }
+
+        #day:after {
+            content: '';
+            position: absolute;
+            width: 50%;
+            height: 2px;
+            background: var(--light-inner-circle);
+            bottom: -5px;
+            left: 25%;
+            border-radius: 2px;
+        }
+
+        body.dark-mode #day:after {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        #time-12h,
+        #time-24h {
+            font-size: clamp(0.9rem, 2.5vw, 1.5rem);
+            margin: 5px 0;
+            font-weight: 525;
+            opacity: 0.8;
+        }
+
+        .digital-time {
+            display: flex;
+            justify-content: center;
+            margin: 15px 0;
+            background: rgba(58, 110, 165, 0.05);
+            padding: 15px;
+            border-radius: 15px;
+        }
+
+        body.dark-mode .digital-time {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .digital-display {
+            display: flex;
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 700;
+        }
+
+        .time-unit {
+            width: 80px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.6);
+            box-shadow:
+                inset 0 0 5px rgba(0, 0, 0, 0.05),
+                0 2px 4px rgba(0, 0, 0, 0.05);
+            padding: 5px 0;
+        }
+
+        body.dark-mode .time-unit {
+            background: rgba(0, 0, 0, 0.3);
+            box-shadow:
+                inset 0 0 5px rgba(0, 0, 0, 0.2),
+                0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .time-separator {
+            margin: 5px 5px;
+            animation: blink 1s infinite;
+            /* align-self: center; */
+        }
+
+        .ampm {
+            font-size: clamp(1rem, 3vw, 1.6rem);
+            font-weight: 500;
+            margin-left: 15px;
+            align-self: flex-end;
+            margin-bottom: 17px;
+            padding: 4px 8px;
+            background: rgba(58, 110, 165, 0.1);
+            border-radius: 6px;
+        }
+
+        body.dark-mode .ampm {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
             }
 
-            .toggle-button {
-                margin-bottom: 15px;
+            50% {
+                opacity: 0.3;
             }
         }
 
-        @media (max-width: 400px) {
-            .numbers .circle::before {
-                width: 8px;
-                height: 8px;
+        .time-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.6;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 600px) {
+            .time-info {
+                margin-top: 15px;
+                padding: 15px;
             }
 
-            .numbers .circle i {
-                transform: scaleY(0.4);
+            .toggle-button {
+                width: 50px;
+                height: 50px;
+            }
+
+            #mode-icon {
+                font-size: 1.5rem;
             }
         }
     </style>
 </head>
 
 <body>
-    <button class="toggle-button" onclick="toggleMode()">
-        <span id="mode-icon">🌙</span>
-    </button>
-    <div class="clock">
-        <div class="numbers">
-            <div class="circle" id="sec" style="--clr:#04fc43;"><i></i></div>
-            <div class="circle" id="min" style="--clr:#fee800"><i></i></div>
-            <div class="circle" id="hrs" style="--clr:#ff2972"><i></i></div>
-            <span style="--i:0;"><b>12</b></span>
-            <span style="--i:1;"><b>1</b></span>
-            <span style="--i:2;"><b>2</b></span>
-            <span style="--i:3;"><b>3</b></span>
-            <span style="--i:4;"><b>4</b></span>
-            <span style="--i:5;"><b>5</b></span>
-            <span style="--i:6;"><b>6</b></span>
-            <span style="--i:7;"><b>7</b></span>
-            <span style="--i:8;"><b>8</b></span>
-            <span style="--i:9;"><b>9</b></span>
-            <span style="--i:10;"><b>10</b></span>
-            <span style="--i:11;"><b>11</b></span>
+
+    <div class="container">
+        <div class="toggle-container">
+            <button class="toggle-button" onclick="toggleMode()">
+                <span id="mode-icon">🌙</span>
+            </button>
         </div>
-    </div>
-    <div class="time-info">
-        <div id="day"></div>
-        <div id="time-12h"></div>
-        <div id="time-24h"></div>
+        <div class="clock-container">
+            <div class="clock">
+                <div class="clock-face-shadow"></div>
+                <div class="numbers">
+                    <div class="brand">Elegance</div>
+                    <div class="clock-marker" id="markers"></div>
+                    <div class="circle" id="sec" style="--clr:#04fc43;"><i></i></div>
+                    <div class="circle" id="min" style="--clr:#fee800"><i></i></div>
+                    <div class="circle" id="hrs" style="--clr:#ff2972"><i></i></div>
+                    <span style="--i:0;"><b>12</b></span>
+                    <span style="--i:1;"><b>1</b></span>
+                    <span style="--i:2;"><b>2</b></span>
+                    <span style="--i:3;"><b>3</b></span>
+                    <span style="--i:4;"><b>4</b></span>
+                    <span style="--i:5;"><b>5</b></span>
+                    <span style="--i:6;"><b>6</b></span>
+                    <span style="--i:7;"><b>7</b></span>
+                    <span style="--i:8;"><b>8</b></span>
+                    <span style="--i:9;"><b>9</b></span>
+                    <span style="--i:10;"><b>10</b></span>
+                    <span style="--i:11;"><b>11</b></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="time-info">
+            <div id="day"></div>
+            <div class="digital-time">
+                <div class="digital-display">
+                    <div class="time-unit-container">
+                        <div id="hour" class="time-unit">12</div>
+                        <div class="time-label">Hours</div>
+                    </div>
+                    <div class="time-separator">:</div>
+                    <div class="time-unit-container">
+                        <div id="minute" class="time-unit">00</div>
+                        <div class="time-label">Minutes</div>
+                    </div>
+                    <div class="time-separator">:</div>
+                    <div class="time-unit-container">
+                        <div id="second" class="time-unit">00</div>
+                        <div class="time-label">Seconds</div>
+                    </div>
+                    <div id="ampm" class="ampm">AM</div>
+                </div>
+            </div>
+            <div id="time-12h"></div>
+            <div id="time-24h"></div>
+        </div>
     </div>
 
     <script>
@@ -252,6 +554,17 @@
         let mn = document.querySelector('#min');
         let sc = document.querySelector('#sec');
 
+        // Create the clock markers
+        const markersContainer = document.getElementById('markers');
+        for (let i = 0; i < 60; i++) {
+            const marker = document.createElement('div');
+            marker.className = 'marker';
+            if (i % 5 === 0) {
+                marker.classList.add('hour-mark');
+            }
+            marker.style.transform = `rotate(${i * 6}deg)`;
+            markersContainer.appendChild(marker);
+        }
         setInterval(() => {
             let day = new Date();
             let hh = day.getHours() * 30;
@@ -273,16 +586,23 @@
             // 12-hour format
             let ampm = hours >= 12 ? 'PM' : 'AM';
             let hours12 = hours % 12 || 12;
-            document.getElementById('time-12h').innerText = `12-hour: ${hours12}:${minutes}:${seconds} ${ampm}`;
 
-            // 24-hour format
-            document.getElementById('time-24h').innerText = `24-hour: ${hours}:${minutes}:${seconds}`;
+            // Update digital clock
+            document.getElementById('hour').innerText = String(hours12).padStart(2, '0');
+            document.getElementById('minute').innerText = minutes;
+            document.getElementById('second').innerText = seconds;
+            document.getElementById('ampm').innerText = ampm;
+
+            // Update text display
+            document.getElementById('time-12h').innerText = `12-hour format: ${hours12}:${minutes}:${seconds} ${ampm}`;
+            document.getElementById('time-24h').innerText = `24-hour format: ${String(hours).padStart(2, '0')}:${minutes}:${seconds}`;
         }, 1000);
 
         function toggleMode() {
             const body = document.body;
             const icon = document.getElementById('mode-icon');
             body.classList.toggle('dark-mode');
+
             // Change the icon based on the current mode
             icon.textContent = body.classList.contains('dark-mode') ? '☀️' : '🌙';
 
@@ -290,19 +610,23 @@
             localStorage.setItem('mode', body.classList.contains('dark-mode') ? 'dark' : 'light');
         }
 
-        // Set the initial icon based on the default mode
+        // Set the initial mode based on localStorage or system preference
         document.addEventListener('DOMContentLoaded', () => {
             const savedMode = localStorage.getItem('mode');
+            const prefersDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
             const body = document.body;
             const icon = document.getElementById('mode-icon');
 
-            // Check the saved mode and apply it
-            if (savedMode === 'dark') {
+            // Apply saved mode or use system preference
+            if (savedMode === 'dark' || (savedMode === null && prefersDarkMode)) {
                 body.classList.add('dark-mode');
-                icon.textContent = '☀️'; // Set icon for dark mode
+                icon.textContent = '☀️';
             } else {
-                icon.textContent = '🌙'; // Set icon for light mode
+                icon.textContent = '🌙';
             }
+
+            // Container is initially hidden and fades in
+            document.querySelector('.container').style.opacity = '1';
         });
     </script>
 </body>
